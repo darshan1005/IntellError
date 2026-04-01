@@ -1,0 +1,43 @@
+{
+  "name": "intellerror",
+  "version": "1.0.0",
+  "description": "An intelligenc to expain error in most readable way with small suggestions based on code rules",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "postbuild": "tsc --emitDeclarationOnly",
+    "dev": "tsup --watch",
+    "test": "tsx test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darshan1005/IntellError.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darshan1005/IntellError/issues"
+  },
+  "homepage": "https://github.com/darshan1005/IntellError#readme",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "diff": "^8.0.4",
+    "stacktrace-parser": "^0.1.11"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
