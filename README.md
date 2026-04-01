@@ -88,4 +88,4 @@ src/index.ts:12:15   ← YOUR CODE
 
 ## 📄 License
 
-ISC © [darshan1005](https://github.com/darshan1005)
+MIT © [darshan1005](https://github.com/darshan1005)
