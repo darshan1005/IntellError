@@ -1,7 +1,7 @@
 {
   "name": "intellerror",
   "version": "1.0.0",
-  "description": "An intelligenc to expain error in most readable way with small suggestions based on code rules",
+  "description": "Intelligent error formatting for Node.js and Browser. Transforms ugly stack traces into clean, readable, and actionable output with smart code suggestions.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,19 +9,37 @@
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./register": {
+      "import": "./dist/register.js",
+      "require": "./dist/register.cjs"
     }
   },
   "scripts": {
     "build": "tsup",
     "postbuild": "tsc --emitDeclarationOnly",
     "dev": "tsup --watch",
-    "test": "tsx test.ts"
+    "test": "tsx test.ts",
+    "example:basic": "tsx examples/basic-usage.ts",
+    "example:async": "tsx examples/async-error.ts",
+    "example:custom": "tsx examples/custom-error.ts",
+    "examples:all": "npm run example:basic && npm run example:async && npm run example:custom"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/darshan1005/IntellError.git"
   },
-  "keywords": [],
+  "keywords": [
+    "error",
+    "stack-trace",
+    "formatter",
+    "pretty-error",
+    "node",
+    "browser",
+    "react",
+    "vite",
+    "suggestions"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {

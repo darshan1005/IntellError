@@ -11,7 +11,9 @@ Transform ugly JavaScript/Node.js stack traces into clean, readable, and actiona
 - 📍 **Smart Highlighting**: Instantly identifies exactly where the error occurred in *your* code.
 - 💡 **Actionable Suggestions**: Context-aware fixes for common errors like `TypeError` or `SyntaxError`.
 - ⚡ **Zero Config**: Works out of the box with standard `Error` objects.
-- 🎨 **Beautiful Output**: Uses `chalk` for high-contrast, easy-to-read terminal output.
+- 🎨 **Beautiful Terminal Output**: High-contrast, easy-to-read errors using `chalk`.
+- 🌐 **First-Class Browser Support**: Native `%c` console styling for React, Vite, and Next.js.
+- 📦 **Lightweight**: Zero dependencies for the browser formatter.
 
 ## 🚀 Installation
 
@@ -19,20 +21,62 @@ Transform ugly JavaScript/Node.js stack traces into clean, readable, and actiona
 npm install intellerror
 ```
 
-## 📖 Usage
+## 🛠️ Global Quick Start (Highly Recommended)
 
+You can set up `IntellError` globally to catch all unhandled errors across your entire project without changing any of your logic.
+
+### For Browser (React, Vite, Next.js)
+Add this at the very top of your entry file (e.g., `main.tsx` or `index.tsx`):
+
+```typescript
+import 'intellerror/register';
+```
+
+### For Node.js (CLI)
+Run your application using the `--import` or `-r` flag:
+
+```bash
+# ESM (Node.js 20+)
+node --import intellerror/register index.js
+
+# CommonJS
+node -r intellerror/register index.js
+```
+
+---
+
+## 📖 Manual Usage
+
+If you prefer to format specific errors yourself:
+
+### Terminal / Node.js
+```typescript
 import { formatError } from 'intellerror';
 
 try {
-  // your code that might fail
-  const user = undefined;
-  console.log(user.name);
+  // your code...
 } catch (err) {
   console.log(formatError(err));
 }
 ```
 
-### 🚅 Express Middleware
+### Browser Console
+```typescript
+import { formatErrorBrowser } from 'intellerror';
+
+try {
+  // your React/Vite code...
+} catch (err) {
+  // Note: use the spread operator (...) for CSS styling to work
+  console.log(...formatErrorBrowser(err));
+}
+```
+
+---
+
+## 🚅 Express Middleware
+
+Perfect for building clean development APIs:
 
 ```typescript
 import express from 'express';
@@ -42,28 +86,25 @@ const app = express();
 
 // ... your routes ...
 
-// Add this at the very end of your middleware stack
+// Add this at the end of your middleware stack
 app.use(errorFormatter());
 
 app.listen(3000);
 ```
 
-### 🛠️ CLI Registration
+## 🎮 Demos & Examples
 
-You can also use IntellError to catch global unhandled exceptions and promise rejections across your entire app without changing any code.
+We've included several ready-to-run examples in the `examples/` directory. Run them directly:
 
-```bash
-# CommonJS
-node -r intellerror/register index.js
+- **Basic Error**: `npm run example:basic`
+- **Async Errors**: `npm run example:async`
+- **Custom Errors**: `npm run example:custom`
+- **Run All**: `npm run examples:all`
 
-# ESM (Node.js 20+)
-node --import intellerror/register index.js
-```
-
-### Example Output
+## Example Output
 
 ```text
- TypeError  Cannot read properties of undefined (reading 'name')
+  TypeError  Cannot read properties of undefined (reading 'name')
 
 📍 Location:
 src/index.ts:12:15   ← YOUR CODE
@@ -84,8 +125,9 @@ src/index.ts:12:15   ← YOUR CODE
 - [x] User code highlighting
 - [x] Rule-based suggestion engine
 - [x] Express middleware integration
-- [x] CLI runner hook (`node -r intellerror/register`)
+- [x] Universal Global Register (`intellerror/register`)
+- [x] Browser-native CSS formatter
 
 ## 📄 License
 
-MIT © [darshan1005](https://github.com/darshan1005)
+ISC © [darshan1005](https://github.com/darshan1005)
