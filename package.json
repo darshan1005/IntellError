@@ -20,6 +20,7 @@
     "postbuild": "tsc --emitDeclarationOnly",
     "dev": "tsup --watch",
     "test": "tsx test.ts",
+    "test:unit": "vitest run",
     "example:basic": "tsx examples/basic-usage.ts",
     "example:async": "tsx examples/async-error.ts",
     "example:custom": "tsx examples/custom-error.ts",
@@ -49,6 +50,7 @@
   "dependencies": {
     "chalk": "^5.6.2",
     "diff": "^8.0.4",
+    "source-map-js": "^1.2.1",
     "stacktrace-parser": "^0.1.11"
   },
   "devDependencies": {
@@ -56,6 +58,7 @@
     "@types/node": "^25.5.0",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
   }
 }

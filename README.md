@@ -131,3 +131,37 @@ src/index.ts:12:15   ← YOUR CODE
 ## 📄 License
 
 ISC © [darshan1005](https://github.com/darshan1005)
+
+---
+
+## ⚙️ Configuration & Customization
+
+You can customize the output and add your own intelligent rules to the formatting engine.
+
+### Global Configuration
+Toggle hidden frames or disable suggestions globally:
+
+```typescript
+import { setupConfig } from 'intellerror';
+
+setupConfig({
+  showNodeModules: true,    // Default: false
+  showNodeInternals: true,  // Default: false
+  suggestionsEnabled: true  // Default: true
+});
+```
+
+### Adding Custom Thinking (Rules)
+Add your own rules if you want `IntellError` to provide suggestions for library-specific errors (e.g., your own API or database errors):
+
+```typescript
+import { registerRule } from 'intellerror';
+
+registerRule({
+  match: (err) => err.message.includes("AUTH_FAILED"),
+  message: "Authentication failure detected.",
+  fix: "Ensure your API_KEY environment variable is set.",
+  description: "Your request was rejected because the credentials were missing or invalid."
+});
+```
+

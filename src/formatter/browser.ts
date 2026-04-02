@@ -1,5 +1,7 @@
 import { parseStack } from '../parser/index.js';
 import { getSuggestions } from '../suggestions/index.js';
+import { getConfig } from '../config.js';
+import { getSearchLinks } from '../suggestions/links.js';
 
 /**
  * Formats an error for the browser console using CSS styling (%c).
@@ -10,11 +12,11 @@ export function formatErrorBrowser(error: Error | unknown): any[] {
     return [String(error)];
   }
 
+  const config = getConfig();
   const stackFrames = parseStack(error);
   const userFrame = stackFrames.find(frame => !frame.isNodeInternal && !frame.isNodeModule);
 
   const errorType = error.constructor.name || 'Error';
-  const suggestions = getSuggestions(error);
 
   let text = `\n%c ${errorType} %c ${error.message}\n\n`;
   const styles = [
@@ -30,6 +32,7 @@ export function formatErrorBrowser(error: Error | unknown): any[] {
     styles.push('color: #1890ff; text-decoration: underline;', 'color: grey; font-style: italic;');
   }
 
+  const suggestions = config.suggestionsEnabled ? getSuggestions(error) : [];
   if (suggestions.length > 0) {
     text += `%c💡 Suggestions:%c\n`;
     styles.push('font-weight: bold;', '');
@@ -51,6 +54,21 @@ export function formatErrorBrowser(error: Error | unknown): any[] {
     text += `\n`;
   }
 
+  if (config.showSearchLinks) {
+    const searchLinks = getSearchLinks(error);
+    text += `%c🔍 Troubleshoot:%c\n`;
+    styles.push('font-weight: bold;', '');
+    
+    text += `Google: %c${searchLinks[0]}%c\n`;
+    styles.push('color: #1890ff; text-decoration: underline;', '');
+    
+    text += `StackOverflow: %c${searchLinks[1]}%c\n`;
+    styles.push('color: #1890ff; text-decoration: underline;', '');
+    
+    text += `GitHub: %c${searchLinks[2]}%c\n\n`;
+    styles.push('color: #1890ff; text-decoration: underline;', '');
+  }
+
   text += `%c📦 Stack:%c\n`;
   styles.push('font-weight: bold;', '');
 
@@ -58,12 +76,12 @@ export function formatErrorBrowser(error: Error | unknown): any[] {
   let hiddenModulesCount = 0;
 
   for (const frame of stackFrames) {
-    if (frame.isNodeInternal) {
+    if (frame.isNodeInternal && !config.showNodeInternals) {
       hiddenInternalsCount++;
       continue;
     }
     
-    if (frame.isNodeModule) {
+    if (frame.isNodeModule && !config.showNodeModules) {
       hiddenModulesCount++;
       continue; 
     }
@@ -82,6 +100,66 @@ export function formatErrorBrowser(error: Error | unknown): any[] {
     if (hiddenInternalsCount > 0) messages.push(`${hiddenInternalsCount} node internals`);
     text += `%c(${messages.join(' and ')} hidden)%c\n`;
     styles.push('color: grey; font-style: italic;', '');
+  }
+
+  return [text, ...styles];
+}
+
+export function formatWarningBrowser(message: string, error?: Error): any[] {
+  const config = getConfig();
+  const actualError = error || new Error(message);
+  const stackFrames = parseStack(actualError);
+  const userFrame = stackFrames.find(frame => !frame.isNodeInternal && !frame.isNodeModule);
+
+  let text = `\n%c WARNING %c ${message}\n\n`;
+  const styles = [
+    'background: #ffec3d; color: black; padding: 2px 4px; border-radius: 3px; font-weight: bold;',
+    'color: #d4b106; font-weight: bold;'
+  ];
+
+  if (userFrame && userFrame.file) {
+    text += `%c📍 Location:%c\n`;
+    styles.push('font-weight: bold;', '');
+    
+    text += `%c${userFrame.file}:${userFrame.lineNumber}:${userFrame.column}%c   (YOUR CODE)\n\n`;
+    styles.push('color: #1890ff; text-decoration: underline;', 'color: grey; font-style: italic;');
+  }
+
+  const suggestions = config.suggestionsEnabled ? getSuggestions(actualError) : [];
+  if (suggestions.length > 0) {
+    text += `%c💡 Suggestions:%c\n`;
+    styles.push('font-weight: bold;', '');
+
+    for (const suggestion of suggestions) {
+      text += `%c• ${suggestion.message}%c\n`;
+      styles.push('color: #52c41a; font-weight: bold;', '');
+      
+      if (suggestion.description) {
+        text += `  %c${suggestion.description}%c\n`;
+        styles.push('color: grey;', '');
+      }
+      
+      if (suggestion.fix) {
+        text += `  %cFix: ${suggestion.fix}%c\n`;
+        styles.push('color: #1890ff;', '');
+      }
+    }
+    text += `\n`;
+  }
+
+  if (config.showSearchLinks) {
+    const searchLinks = getSearchLinks(actualError);
+    text += `%c🔍 Troubleshoot:%c\n`;
+    styles.push('font-weight: bold;', '');
+    
+    text += `Google: %c${searchLinks[0]}%c\n`;
+    styles.push('color: #1890ff; text-decoration: underline;', '');
+    
+    text += `StackOverflow: %c${searchLinks[1]}%c\n`;
+    styles.push('color: #1890ff; text-decoration: underline;', '');
+    
+    text += `GitHub: %c${searchLinks[2]}%c\n\n`;
+    styles.push('color: #1890ff; text-decoration: underline;', '');
   }
 
   return [text, ...styles];
