@@ -24,7 +24,8 @@
     "example:basic": "tsx examples/basic-usage.ts",
     "example:async": "tsx examples/async-error.ts",
     "example:custom": "tsx examples/custom-error.ts",
-    "examples:all": "npm run example:basic && npm run example:async && npm run example:custom"
+    "example:advanced": "tsx examples/advanced-usage.ts",
+    "examples:all": "npm run example:basic && npm run example:async && npm run example:custom && npm run example:advanced"
   },
   "repository": {
     "type": "git",

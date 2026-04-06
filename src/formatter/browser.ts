@@ -1,4 +1,4 @@
-import { parseStack } from '../parser/index.js';
+import { parseStack, getErrorChain } from '../parser/index.js';
 import { getSuggestions } from '../suggestions/index.js';
 import { getConfig } from '../config.js';
 import { getSearchLinks } from '../suggestions/links.js';
@@ -13,7 +13,9 @@ export function formatErrorBrowser(error: Error | unknown): any[] {
   }
 
   const config = getConfig();
-  const stackFrames = parseStack(error);
+  const errorChain = getErrorChain(error);
+  const topError = errorChain[0];
+  const stackFrames = topError.frames;
   const userFrame = stackFrames.find(frame => !frame.isNodeInternal && !frame.isNodeModule);
 
   const errorType = error.constructor.name || 'Error';
@@ -28,7 +30,12 @@ export function formatErrorBrowser(error: Error | unknown): any[] {
     text += `%c📍 Location:%c\n`;
     styles.push('font-weight: bold;', '');
     
-    text += `%c${userFrame.file}:${userFrame.lineNumber}:${userFrame.column}%c   (YOUR CODE)\n\n`;
+    const fileName = userFrame.originalFile || userFrame.file;
+    const line = userFrame.originalLineNumber || userFrame.lineNumber;
+    const col = userFrame.originalColumn || userFrame.column;
+    const isMapped = userFrame.originalFile ? ' [mapped]' : '';
+
+    text += `%c${fileName}:${line}:${col}%c${isMapped}   (YOUR CODE)\n\n`;
     styles.push('color: #1890ff; text-decoration: underline;', 'color: grey; font-style: italic;');
   }
 

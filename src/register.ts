@@ -1,48 +1,90 @@
-import { formatError, formatWarning } from './formatter/index.js';
+import { formatError, formatWarning, formatErrorJSON } from './formatter/index.js';
 import { formatErrorBrowser, formatWarningBrowser } from './formatter/browser.js';
 import { getConfig } from './config.js';
 import { sendWebhookNotification } from './integrations/webhook.js';
 
+const isDeno = typeof (globalThis as any).Deno !== 'undefined';
+const isBun = typeof (globalThis as any).Bun !== 'undefined';
+const isNode = typeof process !== 'undefined' && process.release?.name === 'node';
+const isEdge = typeof process !== 'undefined' && (process.env as any).NEXT_RUNTIME === 'edge';
 const isBrowser = typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
-if (isBrowser) {
-  // --- BROWSER REGISTRATION ---
-  window.addEventListener('error', (event) => {
-    // We only want to handle the error if it contains an Error object
-    if (event.error) {
-      console.error('%c 🛑 UNHANDLED RUNTIME ERROR:', 'background: #ff4d4f; color: white; font-weight: bold; padding: 2px 5px;');
-      console.log(...formatErrorBrowser(event.error));
-      sendWebhookNotification(event.error);
+if (isBrowser || isDeno) {
+  // --- BROWSER / DENO / WEB-STD REGISTRATION ---
+  const target = isBrowser ? window : globalThis;
+  
+  (target as any).addEventListener('error', (event: any) => {
+    const error = event.error || event.message;
+    if (error) {
+      if (isBrowser) {
+          console.error('%c 🛑 UNHANDLED RUNTIME ERROR:', 'background: #ff4d4f; color: white; font-weight: bold; padding: 2px 5px;');
+          console.log(...formatErrorBrowser(error));
+      } else {
+          const config = getConfig();
+          console.error('\n 🔥 UNHANDLED RUNTIME ERROR:');
+          if (config.useJsonMode) {
+              console.error(formatErrorJSON(error));
+          } else {
+              console.error(formatError(error));
+          }
+      }
+      sendWebhookNotification(error);
     }
   });
 
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('%c 🛑 UNHANDLED PROMISE REJECTION:', 'background: #ff4d4f; color: white; font-weight: bold; padding: 2px 5px;');
+  (target as any).addEventListener('unhandledrejection', (event: any) => {
     const reason = event.reason;
     const error = reason instanceof Error ? reason : new Error(String(reason));
-    console.log(...formatErrorBrowser(error));
+    if (isBrowser) {
+        console.error('%c 🛑 UNHANDLED PROMISE REJECTION:', 'background: #ff4d4f; color: white; font-weight: bold; padding: 2px 5px;');
+        console.log(...formatErrorBrowser(error));
+    } else {
+        const config = getConfig();
+        console.error('\n 🔥 UNHANDLED PROMISE REJECTION:');
+        if (config.useJsonMode) {
+            console.error(formatErrorJSON(error));
+        } else {
+            console.error(formatError(error));
+        }
+    }
     sendWebhookNotification(error);
   });
 
-  console.log('%c ✅ IntellError Browser listener active.', 'color: #52c41a; font-weight: bold;');
-} else if (typeof process !== 'undefined' && process.on) {
-  // --- NODE.JS REGISTRATION ---
+  const runtimeName = isBrowser ? 'Browser' : 'Deno';
+  if (isBrowser) {
+      console.log(`%c ✅ IntellError ${runtimeName} listener active.`, 'color: #52c41a; font-weight: bold;');
+  } else {
+      console.log(`✅ IntellError ${runtimeName} listener active.`);
+  }
+} else if (isNode || isBun || isEdge) {
+  // --- NODE.JS / BUN / EDGE REGISTRATION ---
   process.on('uncaughtException', (err) => {
+    const config = getConfig();
     console.error('\n 🔥 UNCAUGHT EXCEPTION DETECTED:');
-    console.error(formatError(err));
+    if (config.useJsonMode) {
+        console.error(formatErrorJSON(err));
+    } else {
+        console.error(formatError(err));
+    }
     sendWebhookNotification(err).finally(() => {
-        process.exit(1);
+        if (!isEdge) process.exit(1); // Don't exit in Edge/Serverless environments
     });
   });
 
   process.on('unhandledRejection', (reason) => {
+    const config = getConfig();
     console.error('\n 🔥 UNHANDLED REJECTION DETECTED:');
     const error = reason instanceof Error ? reason : new Error(String(reason));
-    console.error(formatError(error));
+    if (config.useJsonMode) {
+        console.error(formatErrorJSON(error));
+    } else {
+        console.error(formatError(error));
+    }
     sendWebhookNotification(error);
   });
 
-  console.log('✅ IntellError Node.js listener active.');
+  const runtimeName = isBun ? 'Bun' : (isEdge ? 'Edge' : 'Node.js');
+  console.log(`✅ IntellError ${runtimeName} listener active.`);
 }
 
 // --- OPTIONAL WARNING INTERCEPTION ---
