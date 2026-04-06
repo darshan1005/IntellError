@@ -1,6 +1,6 @@
 {
   "name": "intellerror",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Intelligent error formatting for Node.js and Browser. Transforms ugly stack traces into clean, readable, and actionable output with smart code suggestions.",
   "type": "module",
   "main": "dist/index.js",
